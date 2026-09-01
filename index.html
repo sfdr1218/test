@@ -257,6 +257,35 @@
   .text-input:focus, .textarea:focus { border-color: var(--ring); box-shadow: 0 0 0 1px var(--ring); }
   .textarea { min-height: 6rem; resize: vertical; font-family: inherit; line-height: 1.6; }
 
+  /* ---------- 图标上传 ---------- */
+  .icon-drop {
+    display: flex; align-items: center; gap: .75rem;
+    border: 1px dashed var(--border); border-radius: var(--radius);
+    padding: .625rem; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .icon-drop:hover { border-color: var(--primary); }
+  .icon-drop.over { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+  .icon-drop-preview {
+    width: 3rem; height: 3rem; flex: none; overflow: hidden;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: color-mix(in srgb, var(--muted) 30%, transparent);
+    display: flex; align-items: center; justify-content: center; color: var(--muted-fg);
+  }
+  .icon-drop-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .icon-drop-preview svg { width: 1.5rem; height: 1.5rem; }
+  .icon-drop-text { flex: 1; font-size: .8125rem; color: var(--muted-fg); line-height: 1.5; }
+  .icon-drop-text b { color: var(--fg); font-weight: 600; }
+  .card.icon-drop-over { border-color: var(--primary); box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent); }
+  .card.icon-drop-over .card-icon { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, transparent); }
+  .card.link-card .card-icon { position: relative; }
+  .card.link-card .card-icon::after {
+    content: '换图标'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, .55); color: #fff; font-size: .75rem;
+    border-radius: inherit; opacity: 0; transition: opacity .15s; pointer-events: none;
+  }
+  .card.link-card .card-icon:hover::after { opacity: 1; }
+
   /* ---------- Todo ---------- */
   .todo-stats { display: flex; align-items: center; justify-content: space-between; font-size: .875rem; }
   .todo-stats span { color: var(--muted-fg); }
@@ -340,7 +369,7 @@
       <div class="count" id="count-text"></div>
       <button class="btn btn-sm btn-primary" id="add-link-btn" style="display:none;"></button>
     </div>
-    <div class="manage-hint" id="manage-hint" style="display:none;">管理模式：拖拽卡片调整顺序；网页卡片可编辑名称、图标与网址；收藏的网页可删除</div>
+    <div class="manage-hint" id="manage-hint" style="display:none;">管理模式：拖拽卡片调整顺序；拖动图片到网页卡片可更换图标；点击「编辑」修改名称、图标与网址；收藏的网页可删除</div>
     <div class="grid" id="grid"></div>
     <div class="empty hidden" id="empty-state">
       <span id="empty-icon"></span>
@@ -381,8 +410,13 @@
           <input class="text-input" id="link-url" type="text" placeholder="例如：github.com" />
         </div>
         <div class="space-y-2">
-          <label class="field-label" for="link-icon">图标地址（可选）</label>
-          <input class="text-input" id="link-icon" type="text" placeholder="图片链接，留空使用默认图标" />
+          <label class="field-label">图标（可选）</label>
+          <div class="icon-drop" id="link-icon-drop" title="拖拽图片到此处，或点击选择图片">
+            <div class="icon-drop-preview" id="link-icon-preview"></div>
+            <div class="icon-drop-text"><b>拖拽图片到此处</b> 或点击选择文件<br />自动压缩并保存到页面数据中</div>
+            <input type="file" id="link-icon-file" accept="image/*" hidden />
+          </div>
+          <input class="text-input" id="link-icon" type="text" placeholder="或粘贴图片链接，留空使用默认图标" />
         </div>
       </div>
     </div>
@@ -488,6 +522,27 @@
       items.push({ id: genId(), name: t.name, kind: 'tool', toolId: t.id, order: i });
     });
     saveJSON(ITEMS_KEY, items);
+  })();
+
+  /* ---------- 默认收藏网页（首次加载自动添加一次） ---------- */
+  (function seedDefaultLinks() {
+    if (loadJSON('portal.defaultLinksSeeded.v1', false)) return;
+    var defaults = [
+      { name: '天气', url: 'https://www.nmc.cn/publish/forecast/ASD/qingdao.html' },
+      { name: '青e学', url: 'https://qex.qd-metro.com:8094/home' },
+      { name: '首末班车时间', url: 'https://www.qd-metro.com/qddtsmbc.php#pagetop' }
+    ];
+    var added = false;
+    defaults.forEach(function (dl) {
+      var exists = items.some(function (it) { return it.kind === 'link' && it.url === dl.url; });
+      if (!exists) {
+        var maxOrder = items.reduce(function (m, it) { return Math.max(m, it.order || 0); }, 0);
+        items.push({ id: genId(), name: dl.name, kind: 'link', url: dl.url, icon: '', order: maxOrder + 1 });
+        added = true;
+      }
+    });
+    saveJSON('portal.defaultLinksSeeded.v1', true);
+    if (added) saveJSON(ITEMS_KEY, items);
   })();
 
   /* ---------- DOM 引用 ---------- */
@@ -1163,7 +1218,7 @@
     var def = item.kind === 'tool' ? TOOL_MAP[item.toolId] : null;
     var isLink = item.kind === 'link';
     var card = document.createElement('div');
-    card.className = 'card' + (manageMode ? ' grab' : ' clickable');
+    card.className = 'card' + (manageMode ? ' grab' : ' clickable') + (isLink ? ' link-card' : '');
 
     var renaming = false;
     function draw() {
@@ -1271,10 +1326,16 @@
       });
       card.addEventListener('dragover', function (e) {
         e.preventDefault();
+        if (e.dataTransfer && hasFiles(e.dataTransfer)) {
+          e.dataTransfer.dropEffect = 'copy';
+          if (isLink) card.classList.add('icon-drop-over');
+          return;
+        }
         e.dataTransfer.dropEffect = 'move';
         setDragOver(card, index);
       });
       card.addEventListener('dragleave', function () {
+        card.classList.remove('icon-drop-over');
         if (dragOverCard === card) {
           card.classList.remove('drag-over');
           dragOverCard = null;
@@ -1282,6 +1343,19 @@
       });
       card.addEventListener('drop', function (e) {
         e.preventDefault();
+        if (e.dataTransfer && hasFiles(e.dataTransfer)) {
+          card.classList.remove('icon-drop-over');
+          var file = e.dataTransfer.files && e.dataTransfer.files[0];
+          if (!isLink) { B.error('仅收藏的网页可设置图标'); return; }
+          if (!file || !file.type || !file.type.startsWith('image/')) { B.error('请拖入图片文件'); return; }
+          readImageAsIcon(file, function (dataUri) {
+            item.icon = dataUri;
+            saveJSON(ITEMS_KEY, items);
+            B.success('图标已更新');
+            renderGrid();
+          });
+          return;
+        }
         setDragOver(card, index);
       });
       card.addEventListener('dragend', finishDrag);
@@ -1309,6 +1383,13 @@
     }
     dragIndex = null; dragOverIndex = null; dragOverCard = null;
     renderGrid();
+  }
+  function hasFiles(dt) {
+    if (!dt || !dt.types) return false;
+    for (var i = 0; i < dt.types.length; i++) {
+      if (dt.types[i] === 'Files') return true;
+    }
+    return false;
   }
 
   /* ============================================================
@@ -1341,6 +1422,50 @@
     manageHint.style.display = manageMode ? '' : 'none';
   }
 
+  /* ---------- 图标上传/预览 ---------- */
+  function readImageAsIcon(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var MAX = 192;
+        var scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        var cw = Math.max(1, Math.round(img.width * scale));
+        var ch = Math.max(1, Math.round(img.height * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        cb(canvas.toDataURL('image/png'));
+      };
+      img.onerror = function () { B.error('无法读取该图片'); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function () { B.error('图片读取失败'); };
+    reader.readAsDataURL(file);
+  }
+  function updateIconPreview(src) {
+    var prev = $('link-icon-preview');
+    if (src && /^[a-z][a-z0-9+.-]*:/i.test(src)) {
+      var im = document.createElement('img');
+      im.src = src;
+      im.alt = '';
+      im.addEventListener('error', function () { prev.innerHTML = icon('external-link'); });
+      prev.innerHTML = '';
+      prev.appendChild(im);
+    } else {
+      prev.innerHTML = icon('external-link');
+    }
+  }
+  function handleIconFile(file) {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) { B.error('请选择图片文件'); return; }
+    readImageAsIcon(file, function (dataUri) {
+      $('link-icon').value = dataUri;
+      updateIconPreview(dataUri);
+      B.success('图标已就绪，保存后生效');
+    });
+  }
+
   /* ---------- 添加/编辑网页弹窗 ---------- */
   function openLinkDialog(editItem) {
     editItem = (editItem && editItem.id) ? editItem : null;
@@ -1351,6 +1476,7 @@
     $('link-title').textContent = editItem ? '编辑收藏网页' : '添加收藏网页';
     $('link-desc').textContent = editItem ? '修改网页名称、图标与地址' : '输入网页名称与地址，添加后可在主页点击跳转';
     $('link-submit').innerHTML = icon(editItem ? 'check' : 'plus') + '<span>' + (editItem ? '保存' : '添加') + '</span>';
+    updateIconPreview(editItem ? (editItem.icon || '') : '');
     linkDialog.classList.remove('hidden'); linkDialogOpen = true;
     setTimeout(function () { $('link-name').focus(); }, 0);
   }
@@ -1401,6 +1527,17 @@
   $('link-submit').innerHTML = icon('plus') + '<span>添加</span>';
   $('link-submit').addEventListener('click', submitLink);
   $('link-url').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitLink(); });
+  var linkIconDrop = $('link-icon-drop'), linkIconFile = $('link-icon-file'), linkIconInput = $('link-icon');
+  linkIconDrop.addEventListener('click', function () { linkIconFile.click(); });
+  linkIconFile.addEventListener('change', function () { handleIconFile(linkIconFile.files && linkIconFile.files[0]); linkIconFile.value = ''; });
+  linkIconDrop.addEventListener('dragover', function (e) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; linkIconDrop.classList.add('over'); });
+  linkIconDrop.addEventListener('dragleave', function () { linkIconDrop.classList.remove('over'); });
+  linkIconDrop.addEventListener('drop', function (e) {
+    e.preventDefault(); linkIconDrop.classList.remove('over');
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    handleIconFile(f);
+  });
+  linkIconInput.addEventListener('input', function () { updateIconPreview(linkIconInput.value.trim()); });
   linkDialog.addEventListener('click', function (e) { if (e.target === linkDialog) closeLinkDialog(); });
   toolDialog.addEventListener('click', function (e) { if (e.target === toolDialog) closeTool(); });
   $('tool-close').addEventListener('click', closeTool);
