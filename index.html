@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="一个集成多种实用工具和网页收藏管理的Web应用，提供图片处理、文档转换、二维码操作等内置工具，支持收藏网页、搜索过滤、拖拽排序和自定义展示顺序功能。" />
+<meta property="og:title" content="工具与网页合集门户" />
+<title>工具与网页合集门户</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --radius: 2px;
+    --bg: #f8fafb;
+    --fg: #23283a;
+    --card: #ffffff;
+    --card-fg: #23283a;
+    --primary: #6976c8;
+    --primary-fg: #ffffff;
+    --secondary: #eef0f7;
+    --muted: #f0f3f5;
+    --muted-fg: #697079;
+    --accent: #eef0f7;
+    --destructive: #db4444;
+    --border: #dddfe7;
+    --ring: #6976c8;
+    --shadow: 0 1px 3px rgba(16, 24, 40, .06), 0 1px 2px rgba(16, 24, 40, .04);
+    --shadow-lg: 0 10px 30px -6px rgba(16, 24, 40, .18);
+    --font-sans: "Inter Tight", "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #08090c;
+      --fg: #f3f5f9;
+      --card: #111219;
+      --card-fg: #f3f5f9;
+      --primary: #6976c8;
+      --primary-fg: #ffffff;
+      --secondary: #3f4257;
+      --muted: #242529;
+      --muted-fg: #969ba9;
+      --accent: #3f4257;
+      --destructive: #e05a5a;
+      --border: #3b3d46;
+      --ring: #6976c8;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4), 0 1px 2px rgba(0, 0, 0, .3);
+      --shadow-lg: 0 10px 30px -6px rgba(0, 0, 0, .6);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  input, textarea { font-family: inherit; }
+
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ---------- Header ---------- */
+  header {
+    position: sticky; top: 0; z-index: 30;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .header-inner {
+    max-width: 72rem; margin: 0 auto; padding: .75rem 1rem;
+    display: flex; align-items: center; gap: .75rem;
+  }
+  @media (min-width: 768px) { .header-inner { padding: .75rem 1.5rem; } }
+  .brand { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+  .brand-icon {
+    display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--primary) 50%, transparent);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary); border-radius: var(--radius);
+  }
+  .brand-title { display: none; font-size: .875rem; font-weight: 600; letter-spacing: -.02em; }
+  @media (min-width: 768px) { .brand-title { display: inline; } }
+  .search-wrap { position: relative; flex: 1; min-width: 0; }
+  .search-icon {
+    position: absolute; left: .75rem; top: 50%; transform: translateY(-50%);
+    width: 1rem; height: 1rem; color: var(--muted-fg); pointer-events: none;
+  }
+  .search-input {
+    width: 100%; height: 2.5rem; padding: 0 .75rem 0 2.25rem;
+    border-radius: var(--radius); border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--muted) 30%, transparent);
+    color: var(--fg); font-size: .875rem; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .search-input::placeholder { color: var(--muted-fg); }
+  .search-input:focus { border-color: var(--ring); box-shadow: 0 0 0 1px var(--ring); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+    height: 2.25rem; padding: 0 .875rem; border-radius: var(--radius);
+    border: 1px solid transparent; font-size: .875rem; font-weight: 500;
+    white-space: nowrap; transition: background .15s, border-color .15s, color .15s, opacity .15s;
+  }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-sm { height: 2rem; padding: 0 .75rem; font-size: .8125rem; }
+  .btn-icon { width: 2rem; padding: 0; }
+  .btn-primary { background: var(--primary); color: var(--primary-fg); }
+  .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 90%, #000); }
+  .btn-secondary { background: var(--secondary); color: var(--secondary-fg, var(--fg)); }
+  .btn-secondary:hover:not(:disabled) { background: color-mix(in srgb, var(--secondary) 88%, #000); }
+  .btn-outline { background: transparent; color: var(--fg); border-color: var(--border); }
+  .btn-outline:hover { background: var(--muted); }
+  .btn-ghost { background: transparent; color: var(--fg); }
+  .btn-ghost:hover { background: var(--muted); }
+  .btn-danger { color: var(--destructive); }
+  .btn-danger:hover { background: color-mix(in srgb, var(--destructive) 8%, transparent); }
+  .btn svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+  .btn-sm svg { width: .875rem; height: .875rem; }
+
+  /* ---------- Main ---------- */
+  main { flex: 1; width: 100%; max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; }
+  @media (min-width: 768px) { main { padding: 1.5rem; } }
+  .main-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .count { font-size: .875rem; color: var(--muted-fg); }
+  .count b { font-family: var(--font-mono); color: var(--primary); font-weight: 600; }
+  .manage-hint {
+    margin-bottom: 1rem; border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+    border-radius: var(--radius); padding: .625rem 1rem;
+    font-size: .875rem; color: var(--muted-fg);
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem;
+  }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(3, 1fr); gap: .875rem; } }
+  @media (min-width: 960px) { .grid { grid-template-columns: repeat(6, 1fr); gap: 1rem; } }
+
+  /* ---------- Card ---------- */
+  .card {
+    position: relative; display: flex; flex-direction: column; height: 100%;
+    border: 1px solid var(--border); background: var(--card); color: var(--card-fg);
+    border-radius: var(--radius); padding: 1rem;
+    transition: border-color .15s, opacity .15s, box-shadow .15s;
+  }
+  .card.clickable { cursor: pointer; }
+  .card.clickable:hover { border-color: color-mix(in srgb, var(--primary) 70%, var(--border)); }
+  .card.grab { cursor: grab; }
+  .card.grab:active { cursor: grabbing; }
+  .card.dragging { opacity: .4; }
+  .card.drag-over { border-color: var(--primary); box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent); }
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+  .card-index { font-family: var(--font-mono); font-size: .8125rem; color: var(--muted-fg); }
+  .card-top svg { width: 1rem; height: 1rem; color: var(--muted-fg); }
+  .card-top .link-ico { opacity: 0; transition: opacity .15s; }
+  .card:hover .card-top .link-ico { opacity: 1; }
+  .card-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; padding: .5rem 0; text-align: center; }
+  .card-icon {
+    display: flex; width: 3.25rem; height: 3.25rem; align-items: center; justify-content: center;
+    border: 1px solid var(--border); background: color-mix(in srgb, var(--muted) 30%, transparent);
+    color: var(--primary); border-radius: var(--radius); overflow: hidden;
+  }
+  .card-icon svg { width: 1.75rem; height: 1.75rem; }
+  .card-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-name { font-size: 1rem; font-weight: 600; word-break: break-word; text-wrap: balance; }
+  .rename-row { display: flex; width: 100%; align-items: center; gap: .25rem; }
+  .rename-input {
+    height: 2rem; padding: 0 .5rem; text-align: center; font-size: .875rem;
+    border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+    outline: none; flex: 1; min-width: 0;
+  }
+  .rename-input:focus { border-color: var(--ring); box-shadow: 0 0 0 1px var(--ring); }
+  .card-actions {
+    margin-top: .75rem; display: flex; align-items: center; justify-content: flex-end; gap: .25rem;
+    border-top: 1px solid var(--border); padding-top: .5rem;
+  }
+  .card-actions .btn { height: 1.75rem; padding: 0 .5rem; font-size: .8125rem; color: var(--muted-fg); }
+  .card-actions .btn:hover { color: var(--fg); background: var(--muted); }
+  .card-actions .btn svg { width: .875rem; height: .875rem; margin-right: .25rem; }
+
+  /* ---------- Empty ---------- */
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; padding: 6rem 0; text-align: center; }
+  .empty svg { width: 2.5rem; height: 2.5rem; color: var(--muted-fg); }
+  .empty p { font-size: .875rem; color: var(--muted-fg); }
+
+  /* ---------- Dialog ---------- */
+  .dialog-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, .45); padding: 1rem;
+    animation: fadeIn .12s ease-out;
+  }
+  .dialog-overlay.hidden { display: none; }
+  .dialog {
+    width: 100%; max-width: 32rem; max-height: calc(100vh - 2rem);
+    background: var(--card); color: var(--card-fg);
+    border-radius: calc(var(--radius) + 2px); box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: zoomIn .14s ease-out;
+  }
+  .dialog.tool-dialog { max-width: 32rem; }
+  .dialog.narrow { max-width: 28rem; }
+  .dialog-header { padding: 1.25rem 1.5rem .25rem; }
+  .dialog-title { font-size: 1.125rem; font-weight: 600; line-height: 1.2; letter-spacing: -.01em; font-family: var(--font-mono); font-size: 1rem; }
+  .dialog-desc { margin-top: .25rem; font-size: .875rem; color: var(--muted-fg); }
+  .dialog-body { padding: .75rem 1.5rem 1rem; overflow-y: auto; }
+  .dialog-footer { padding: .75rem 1.5rem 1.25rem; display: flex; justify-content: flex-end; }
+  .dialog-close { position: absolute; top: 1rem; right: 1rem; color: var(--muted-fg); }
+  .space-y-6 > * + * { margin-top: 1.5rem; }
+  .space-y-3 > * + * { margin-top: .75rem; }
+  .space-y-2 > * + * { margin-top: .5rem; }
+  .space-y-4 > * + * { margin-top: 1rem; }
+
+  /* ---------- Dropzone ---------- */
+  .dropzone {
+    border: 1px dashed var(--border); background: color-mix(in srgb, var(--muted) 30%, transparent);
+    border-radius: var(--radius); padding: 2rem; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover { border-color: color-mix(in srgb, var(--primary) 60%, var(--border)); }
+  .dropzone svg { width: 2rem; height: 2rem; color: var(--muted-fg); margin: 0 auto .75rem; display: block; }
+  .dropzone p { font-size: .875rem; color: var(--muted-fg); }
+  .dropzone.highlight { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+  .file-info { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .875rem; }
+  .file-info .name { color: var(--muted-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-info .size { font-family: var(--font-mono); color: var(--muted-fg); white-space: nowrap; }
+  .preview { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius); border: 1px solid var(--border); background: color-mix(in srgb, var(--muted) 20%, transparent); }
+  .preview img { width: 100%; height: 100%; object-fit: contain; }
+
+  /* ---------- Slider ---------- */
+  .slider-row { display: flex; align-items: center; justify-content: space-between; font-size: .875rem; }
+  .slider-row span { color: var(--muted-fg); }
+  .slider-row b { font-family: var(--font-mono); color: var(--primary); font-weight: 600; }
+  input[type="range"] {
+    width: 100%; height: 1.25rem; margin: .25rem 0; -webkit-appearance: none; appearance: none;
+    background: transparent; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--border); }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 14px; height: 14px; margin-top: -5px;
+    border-radius: 50%; background: var(--primary); border: 2px solid var(--card);
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  }
+  input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--border); }
+  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--primary); border: 2px solid var(--card); }
+
+  /* ---------- Inputs / textarea ---------- */
+  .field-label { font-size: .875rem; color: var(--muted-fg); display: block; margin-bottom: .5rem; }
+  .text-input, .textarea {
+    width: 100%; border-radius: var(--radius); border: 1px solid var(--border);
+    background: transparent; color: var(--fg); font-size: .875rem; padding: .5rem .75rem;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .text-input::placeholder, .textarea::placeholder { color: var(--muted-fg); }
+  .text-input:focus, .textarea:focus { border-color: var(--ring); box-shadow: 0 0 0 1px var(--ring); }
+  .textarea { min-height: 6rem; resize: vertical; font-family: inherit; line-height: 1.6; }
+
+  /* ---------- Todo ---------- */
+  .todo-stats { display: flex; align-items: center; justify-content: space-between; font-size: .875rem; }
+  .todo-stats span { color: var(--muted-fg); }
+  .todo-stats b { font-family: var(--font-mono); color: var(--primary); font-weight: 600; }
+  .todo-add { display: flex; gap: .5rem; }
+  .todo-add .text-input { flex: 1; }
+  .todo-list { display: flex; flex-direction: column; gap: .5rem; max-height: 18rem; overflow-y: auto; }
+  .todo-item {
+    display: flex; align-items: center; gap: .75rem;
+    border: 1px solid var(--border); background: color-mix(in srgb, var(--muted) 20%, transparent);
+    border-radius: var(--radius); padding: .625rem .75rem;
+  }
+  .todo-label { display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 0; cursor: pointer; }
+  .todo-check {
+    width: 1rem; height: 1rem; border-radius: var(--radius); border: 1px solid var(--primary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: background .15s; background: transparent;
+  }
+  .todo-check svg { width: .75rem; height: .75rem; color: var(--primary-fg); opacity: 0; }
+  .todo-item input[type="checkbox"] { display: none; }
+  .todo-item input[type="checkbox"]:checked + .todo-check { background: var(--primary); }
+  .todo-item input[type="checkbox"]:checked + .todo-check svg { opacity: 1; }
+  .todo-text { font-size: .875rem; word-break: break-word; }
+  .todo-item input[type="checkbox"]:checked ~ .todo-text { color: var(--muted-fg); text-decoration: line-through; }
+  .todo-item .btn-icon { width: 1.75rem; height: 1.75rem; color: var(--muted-fg); flex-shrink: 0; }
+  .todo-item .btn-icon:hover { color: var(--destructive); }
+  .todo-empty { padding: 2.5rem 0; text-align: center; font-size: .875rem; color: var(--muted-fg); }
+
+  /* ---------- QR ---------- */
+  .qr-box { display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+  .qr-canvas-wrap { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius); padding: 1rem; }
+  .qr-canvas-wrap img { width: 12rem; height: 12rem; display: block; }
+
+  /* ---------- Spinner ---------- */
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes zoomIn { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Toast ---------- */
+  #toast-root { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: .5rem; width: max-content; max-width: min(92vw, 26rem); }
+  .toast {
+    display: flex; align-items: flex-start; gap: .5rem;
+    background: var(--card); color: var(--card-fg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: .625rem .875rem; font-size: .875rem;
+    box-shadow: var(--shadow-lg); animation: toastIn .18s ease-out;
+  }
+  .toast svg { width: 1rem; height: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .toast.success svg { color: #22a06b; }
+  .toast.error svg { color: var(--destructive); }
+  .toast.warning svg { color: #e6a23c; }
+  .toast.out { animation: toastOut .2s ease-in forwards; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+  .w-full { width: 100%; }
+  .text-right { text-align: right; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .result-block { border-top: 1px solid var(--border); padding-top: 1rem; }
+  .mono { font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" id="brand-icon"></div>
+        <span class="brand-title">工具合集</span>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon" id="search-icon"></span>
+        <input class="search-input" id="search-input" type="text" placeholder="搜索工具或收藏网页…" autocomplete="off" />
+      </div>
+      <button class="btn btn-outline" id="manage-btn"></button>
+    </div>
+  </header>
+
+  <main>
+    <div class="main-head">
+      <div class="count" id="count-text"></div>
+      <button class="btn btn-sm btn-primary" id="add-link-btn" style="display:none;"></button>
+    </div>
+    <div class="manage-hint" id="manage-hint" style="display:none;">管理模式：拖拽卡片调整顺序；网页卡片可编辑名称、图标与网址；收藏的网页可删除</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty hidden" id="empty-state">
+      <span id="empty-icon"></span>
+      <p id="empty-text"></p>
+    </div>
+  </main>
+</div>
+
+<!-- Tool dialog -->
+<div class="dialog-overlay hidden" id="tool-dialog">
+  <div class="dialog tool-dialog" style="position:relative;">
+    <div class="dialog-header">
+      <div class="dialog-title" id="tool-title"></div>
+      <div class="dialog-desc" id="tool-desc"></div>
+    </div>
+    <div class="dialog-body" id="tool-body"></div>
+    <div class="dialog-footer">
+      <button class="btn btn-ghost" id="tool-close">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/edit link dialog -->
+<div class="dialog-overlay hidden" id="link-dialog">
+  <div class="dialog narrow">
+    <div class="dialog-header">
+      <div class="dialog-title" id="link-title">添加收藏网页</div>
+      <div class="dialog-desc" id="link-desc">输入网页名称与地址，添加后可在主页点击跳转</div>
+    </div>
+    <div class="dialog-body">
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <label class="field-label" for="link-name">网页名称</label>
+          <input class="text-input" id="link-name" type="text" placeholder="例如：GitHub" />
+        </div>
+        <div class="space-y-2">
+          <label class="field-label" for="link-url">网页地址</label>
+          <input class="text-input" id="link-url" type="text" placeholder="例如：github.com" />
+        </div>
+        <div class="space-y-2">
+          <label class="field-label" for="link-icon">图标地址（可选）</label>
+          <input class="text-input" id="link-icon" type="text" placeholder="图片链接，留空使用默认图标" />
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer" style="gap:.5rem;">
+      <button class="btn btn-ghost" id="link-cancel">取消</button>
+      <button class="btn btn-primary" id="link-submit"></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js"></script>
+<script>
+/* ============================================================
+ * 工具与网页合集门户 — 单文件实现
+ * 包含 7 个内置工具 + 网页收藏管理 + 搜索过滤 + 拖拽排序
+ * ============================================================ */
+(function () {
+  "use strict";
+
+  /* ---------- 图标（lucide 风格内联 SVG） ---------- */
+  var PATHS = {
+    'layout-grid': '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+    'search': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/>',
+    'settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    'check': '<path d="M20 6 9 17l-5-5"/>',
+    'plus': '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    'external-link': '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+    'grip-vertical': '<circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>',
+    'pencil': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+    'trash-2': '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+    'x': '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    'upload': '<path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
+    'loader-circle': '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+    'copy': '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+    'download': '<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
+    'image-down': '<path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19 3 3v-5.5"/><path d="m17 22 3-3"/><circle cx="9" cy="9" r="2"/>',
+    'sparkles': '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+    'scan-text': '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/><path d="M7 8h10"/><path d="M7 16h6"/>',
+    'list-todo': '<path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/>',
+    'file-text': '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+    'qr-code': '<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/>',
+    'scan-line': '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
+    'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16.5 9"/>',
+    'circle-x': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+    'triangle-alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    'info': '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'
+  };
+  function icon(name, cls) {
+    var p = PATHS[name] || '';
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="' + (cls || '') + '">' + p + '</svg>';
+  }
+
+  /* ---------- 应用定义 ---------- */
+  var TOOLS = [
+    { id: 'image-compress', name: '图片压缩', desc: '在浏览器端压缩图片体积', icon: 'image-down' },
+    { id: 'image-sharpen',  name: '图片锐化', desc: '增强图片清晰度与细节', icon: 'sparkles' },
+    { id: 'image-ocr',      name: '图片文字提取', desc: '识别并提取图片中的文字', icon: 'scan-text' },
+    { id: 'todo',           name: '待办清单', desc: '记录与管理你的待办事项', icon: 'list-todo' },
+    { id: 'pdf-to-word',    name: 'PDF转Word', desc: '将PDF转换为可编辑文档', icon: 'file-text' },
+    { id: 'qr-recognize',   name: '二维码识别', desc: '识别图片中的二维码内容', icon: 'qr-code' },
+    { id: 'qr-generate',    name: '二维码生成', desc: '将文本或链接生成二维码', icon: 'scan-line' }
+  ];
+  var TOOL_MAP = {};
+  TOOLS.forEach(function (t) { TOOL_MAP[t.id] = t; });
+  var TOOL_DESC = {
+    'image-compress': '在浏览器端压缩图片体积，支持调整质量与尺寸',
+    'image-sharpen': '增强图片清晰度与细节，支持调整锐化强度',
+    'image-ocr': '识别并提取图片中的中英文文字内容',
+    'todo': '记录与管理你的待办事项，数据本地保存',
+    'pdf-to-word': '将PDF文档转换为可编辑的Word文档',
+    'qr-recognize': '识别图片中的二维码内容',
+    'qr-generate': '将文本或链接生成为二维码图片'
+  };
+
+  /* ---------- 本地存储 ---------- */
+  var ITEMS_KEY = 'portal.items.v1';
+  var TODOS_KEY = 'portal.todos.v1';
+  function loadJSON(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+  function saveJSON(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function genId() { return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8); }
+
+  /* ---------- 状态 ---------- */
+  var items = loadJSON(ITEMS_KEY, []);
+  var todos = loadJSON(TODOS_KEY, []);
+  var search = '';
+  var manageMode = false;
+  var activeToolId = null;
+  var linkDialogOpen = false;
+  var dragIndex = null;
+  var dragOverIndex = null;
+  var dragOverCard = null;
+  var editingLinkId = null;
+
+  /* ---------- 首次加载初始化工具卡片 ---------- */
+  (function initTools() {
+    if (items.some(function (it) { return it.kind === 'tool'; })) return;
+    TOOLS.forEach(function (t, i) {
+      items.push({ id: genId(), name: t.name, kind: 'tool', toolId: t.id, order: i });
+    });
+    saveJSON(ITEMS_KEY, items);
+  })();
+
+  /* ---------- DOM 引用 ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var gridEl = $('grid'), countEl = $('count-text'), searchEl = $('search-input'),
+      manageBtn = $('manage-btn'), addLinkBtn = $('add-link-btn'), manageHint = $('manage-hint'),
+      emptyState = $('empty-state'), emptyText = $('empty-text'), emptyIcon = $('empty-icon'),
+      toolDialog = $('tool-dialog'), toolTitle = $('tool-title'), toolDesc = $('tool-desc'), toolBody = $('tool-body'),
+      linkDialog = $('link-dialog'), toastRoot = $('toast-root');
+
+  /* ---------- Toast ---------- */
+  function toast(message, type) {
+    var t = document.createElement('div');
+    t.className = 'toast ' + (type || 'success');
+    var ic = type === 'error' ? 'circle-x' : (type === 'warning' ? 'triangle-alert' : 'circle-check');
+    t.innerHTML = icon(ic) + '<span></span>';
+    t.querySelector('span').textContent = message;
+    toastRoot.appendChild(t);
+    setTimeout(function () {
+      t.classList.add('out');
+      setTimeout(function () { t.remove(); }, 200);
+    }, 2600);
+  }
+  var B = { success: function (m) { toast(m, 'success'); }, error: function (m) { toast(m, 'error'); }, warning: function (m) { toast(m, 'warning'); } };
+
+  /* ---------- 工具函数 ---------- */
+  function formatBytes(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB'; }
+  function loadImage(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('图片加载失败')); };
+      img.src = url;
+    });
+  }
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) { blob ? resolve(blob) : reject(new Error('图像转换失败')); }, type, quality);
+    });
+  }
+  function downloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function baseName(name) { return name.replace(/\.[^.]+$/, '') || 'document'; }
+  function normalizeUrl(raw) {
+    var t = (raw || '').trim();
+    if (!t) return '';
+    return /^https?:\/\//i.test(t) ? t : 'https://' + t;
+  }
+
+  /* ---------- 通用上传组件 ---------- */
+  function createDropzone(id, accept, onFile) {
+    var dz = document.createElement('div');
+    dz.className = 'dropzone';
+    dz.innerHTML = icon('upload') + '<p>点击或拖拽文件到此处上传</p>';
+    var input = document.createElement('input');
+    input.type = 'file'; input.accept = accept; input.style.display = 'none'; input.id = id;
+    dz.appendChild(input);
+    dz.addEventListener('click', function () { input.click(); });
+    dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('highlight'); });
+    dz.addEventListener('dragleave', function () { dz.classList.remove('highlight'); });
+    dz.addEventListener('drop', function (e) {
+      e.preventDefault(); dz.classList.remove('highlight');
+      var f = e.dataTransfer.files; if (f && f[0]) onFile(f[0]);
+    });
+    input.addEventListener('change', function () { if (input.files && input.files[0]) onFile(input.files[0]); });
+    return dz;
+  }
+
+  /* ============================================================
+   * 工具：图片压缩
+   * ============================================================ */
+  function CompressApp() {
+    var file = null, quality = 60, maxWidth = 1280, busy = false, result = null;
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      el.appendChild(dropzone);
+
+      if (file) {
+        var info = document.createElement('div');
+        info.className = 'file-info';
+        info.innerHTML = '<span class="name"></span><span class="size"></span>';
+        info.querySelector('.name').textContent = file.name;
+        info.querySelector('.size').textContent = formatBytes(file.size);
+        el.appendChild(info);
+
+        var qWrap = document.createElement('div'); qWrap.className = 'space-y-2';
+        qWrap.innerHTML = '<div class="slider-row"><span>压缩质量</span><b class="q-val">60%</b></div>';
+        var qRange = document.createElement('input');
+        qRange.type = 'range'; qRange.min = 10; qRange.max = 100; qRange.step = 5; qRange.value = quality;
+        qRange.addEventListener('input', function () { quality = +qRange.value; qWrap.querySelector('.q-val').textContent = quality + '%'; });
+        qWrap.appendChild(qRange);
+        el.appendChild(qWrap);
+
+        var wWrap = document.createElement('div'); wWrap.className = 'space-y-2';
+        wWrap.innerHTML = '<div class="slider-row"><span>最大宽度</span><b class="w-val">1280px</b></div>';
+        var wRange = document.createElement('input');
+        wRange.type = 'range'; wRange.min = 320; wRange.max = 4096; wRange.step = 64; wRange.value = maxWidth;
+        wRange.addEventListener('input', function () { maxWidth = +wRange.value; wWrap.querySelector('.w-val').textContent = maxWidth + 'px'; });
+        wWrap.appendChild(wRange);
+        el.appendChild(wWrap);
+
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-primary w-full';
+        btn.disabled = busy;
+        if (busy) { btn.innerHTML = icon('loader-circle', 'spin') + '<span>压缩中…</span>'; }
+        else { btn.innerHTML = '<span>开始压缩</span>'; }
+        btn.addEventListener('click', onCompress);
+        el.appendChild(btn);
+      }
+
+      if (result) {
+        var rb = document.createElement('div');
+        rb.className = 'result-block space-y-3';
+        rb.innerHTML = '<div class="file-info"><span class="name">压缩后大小</span><span class="size mono"></span></div>';
+        rb.querySelector('.size').textContent = formatBytes(result.blob.size);
+        var prev = document.createElement('div');
+        prev.className = 'preview';
+        var img = document.createElement('img'); img.src = result.url; img.alt = '压缩预览';
+        prev.appendChild(img);
+        rb.appendChild(prev);
+        var dl = document.createElement('button');
+        dl.className = 'btn btn-secondary w-full';
+        dl.innerHTML = icon('download') + '<span>下载压缩图片</span>';
+        dl.addEventListener('click', function () { downloadBlob(result.blob, baseName(file.name) + '_compressed.jpg'); });
+        rb.appendChild(dl);
+        el.appendChild(rb);
+      }
+    }
+
+    function onFile(f) {
+      if (!f.type.startsWith('image/')) { B.error('请上传图片格式的文件'); return; }
+      file = f; result = null; render();
+    }
+    async function onCompress() {
+      if (!file || busy) return;
+      busy = true; render();
+      try {
+        var img = await loadImage(file);
+        var n = img.naturalWidth, r = img.naturalHeight;
+        if (n > maxWidth) { r = Math.round(r * maxWidth / n); n = maxWidth; }
+        var canvas = document.createElement('canvas');
+        canvas.width = n; canvas.height = r;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('画布初始化失败');
+        ctx.drawImage(img, 0, 0, n, r);
+        var blob = await canvasToBlob(canvas, 'image/jpeg', quality / 100);
+        if (result && result.url) URL.revokeObjectURL(result.url);
+        result = { blob: blob, url: URL.createObjectURL(blob) };
+        B.success('压缩完成');
+      } catch (e) {
+        B.error(e instanceof Error ? e.message : '压缩失败，请重试');
+      } finally { busy = false; render(); }
+    }
+
+    var dropzone = createDropzone('compress-input', 'image/*', onFile);
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具：图片锐化
+   * ============================================================ */
+  function SharpenApp() {
+    var file = null, strength = 50, busy = false, result = null;
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      el.appendChild(dropzone);
+      if (file) {
+        var info = document.createElement('div');
+        info.className = 'file-info';
+        info.innerHTML = '<span class="name"></span>';
+        info.querySelector('.name').textContent = file.name;
+        el.appendChild(info);
+
+        var sWrap = document.createElement('div'); sWrap.className = 'space-y-2';
+        sWrap.innerHTML = '<div class="slider-row"><span>锐化强度</span><b class="s-val">50%</b></div>';
+        var sRange = document.createElement('input');
+        sRange.type = 'range'; sRange.min = 10; sRange.max = 100; sRange.step = 5; sRange.value = strength;
+        sRange.addEventListener('input', function () { strength = +sRange.value; sWrap.querySelector('.s-val').textContent = strength + '%'; });
+        sWrap.appendChild(sRange);
+        el.appendChild(sWrap);
+
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-primary w-full'; btn.disabled = busy;
+        if (busy) { btn.innerHTML = icon('loader-circle', 'spin') + '<span>锐化中…</span>'; }
+        else { btn.innerHTML = '<span>开始锐化</span>'; }
+        btn.addEventListener('click', onSharpen);
+        el.appendChild(btn);
+      }
+      if (result) {
+        var rb = document.createElement('div');
+        rb.className = 'result-block space-y-3';
+        var prev = document.createElement('div'); prev.className = 'preview';
+        var img = document.createElement('img'); img.src = result.url; img.alt = '锐化预览';
+        prev.appendChild(img);
+        rb.appendChild(prev);
+        var dl = document.createElement('button');
+        dl.className = 'btn btn-secondary w-full';
+        dl.innerHTML = icon('download') + '<span>下载锐化图片</span>';
+        dl.addEventListener('click', function () { downloadBlob(result.blob, baseName(file.name) + '_sharpened.png'); });
+        rb.appendChild(dl);
+        el.appendChild(rb);
+      }
+    }
+
+    function onFile(f) {
+      if (!f.type.startsWith('image/')) { B.error('请上传图片格式的文件'); return; }
+      file = f; result = null; render();
+    }
+    async function onSharpen() {
+      if (!file || busy) return;
+      busy = true; render();
+      try {
+        var img = await loadImage(file);
+        var n = img.naturalWidth, r = img.naturalHeight;
+        var canvas = document.createElement('canvas');
+        canvas.width = n; canvas.height = r;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('画布初始化失败');
+        ctx.drawImage(img, 0, 0);
+        var src = ctx.getImageData(0, 0, n, r);
+        var out = ctx.createImageData(n, r);
+        var d = src.data, f = out.data;
+        var p = strength / 100, m = 1 + 4 * p, h = -p;
+        for (var y = 1; y < r - 1; y++) {
+          for (var x = 1; x < n - 1; x++) {
+            var idx = (y * n + x) * 4;
+            for (var c = 0; c < 3; c++) {
+              var v = d[idx + c] * m + d[idx - 4 + c] * h + d[idx + 4 + c] * h + d[idx - n * 4 + c] * h + d[idx + n * 4 + c] * h;
+              f[idx + c] = Math.max(0, Math.min(255, v));
+            }
+            f[idx + 3] = d[idx + 3];
+          }
+        }
+        ctx.putImageData(out, 0, 0);
+        var blob = await canvasToBlob(canvas, 'image/png');
+        if (result && result.url) URL.revokeObjectURL(result.url);
+        result = { blob: blob, url: URL.createObjectURL(blob) };
+        B.success('锐化完成');
+      } catch (e) {
+        B.error(e instanceof Error ? e.message : '锐化失败，请重试');
+      } finally { busy = false; render(); }
+    }
+
+    var dropzone = createDropzone('sharpen-input', 'image/*', onFile);
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具：图片文字提取（OCR）
+   * ============================================================ */
+  function OcrApp() {
+    var file = null, previewUrl = null, busy = false, text = '';
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      el.appendChild(dropzone);
+      if (file) {
+        var body = document.createElement('div');
+        body.className = 'space-y-3';
+        if (previewUrl) {
+          var prev = document.createElement('div'); prev.className = 'preview';
+          var img = document.createElement('img'); img.src = previewUrl; img.alt = '图片预览';
+          prev.appendChild(img);
+          body.appendChild(prev);
+        }
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-primary w-full'; btn.disabled = busy;
+        if (busy) { btn.innerHTML = icon('loader-circle', 'spin') + '<span>识别中（首次需加载语言包）…</span>'; }
+        else { btn.innerHTML = icon('scan-text') + '<span>提取文字</span>'; }
+        btn.addEventListener('click', onExtract);
+        body.appendChild(btn);
+        el.appendChild(body);
+      }
+      if (text) {
+        var rb = document.createElement('div');
+        rb.className = 'result-block space-y-3';
+        var head = document.createElement('div');
+        head.className = 'flex-between';
+        head.innerHTML = '<span class="field-label" style="margin:0;">识别结果</span>';
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-ghost btn-sm';
+        copyBtn.innerHTML = icon('copy') + '<span>复制</span>';
+        copyBtn.addEventListener('click', async function () {
+          try { await navigator.clipboard.writeText(text); B.success('已复制到剪贴板'); }
+          catch (e) { B.error('复制失败'); }
+        });
+        head.appendChild(copyBtn);
+        rb.appendChild(head);
+        var ta = document.createElement('textarea');
+        ta.className = 'textarea'; ta.readOnly = true; ta.value = text;
+        rb.appendChild(ta);
+        el.appendChild(rb);
+      }
+    }
+
+    function onFile(f) {
+      if (!f.type.startsWith('image/')) { B.error('请上传图片格式的文件'); return; }
+      file = f; text = '';
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(f);
+      render();
+    }
+    async function onExtract() {
+      if (!file || busy) return;
+      busy = true; render();
+      try {
+        var img = await loadImage(file);
+        var canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('画布初始化失败');
+        ctx.drawImage(img, 0, 0);
+        var worker = await Tesseract.createWorker('chi_sim+eng', 1, { langPath: 'https://tessdata.projectnaptha.com/4.0.0_fast' });
+        var res = await worker.recognize(canvas);
+        var t = (res.data.text || '').trim();
+        await worker.terminate();
+        if (t) { text = t; B.success('文字提取完成'); }
+        else { B.warning('未识别到文字，请尝试更清晰的图片'); }
+      } catch (e) {
+        B.error(e instanceof Error ? e.message : '文字提取失败，请重试');
+      } finally { busy = false; render(); }
+    }
+
+    var dropzone = createDropzone('ocr-input', 'image/*', onFile);
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具：待办清单
+   * ============================================================ */
+  function TodoApp() {
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      var pending = todos.filter(function (t) { return !t.done; }).length;
+
+      var stats = document.createElement('div');
+      stats.className = 'todo-stats';
+      stats.innerHTML = '<span>共 <b></b> 项，待完成 <b class="pending"></b> 项</span>';
+      stats.querySelector('b').textContent = todos.length;
+      stats.querySelector('.pending').textContent = pending;
+      el.appendChild(stats);
+
+      var addRow = document.createElement('div');
+      addRow.className = 'todo-add';
+      var input = document.createElement('input');
+      input.className = 'text-input'; input.placeholder = '添加新的待办事项…';
+      var addBtn = document.createElement('button');
+      addBtn.className = 'btn btn-primary'; addBtn.innerHTML = icon('plus') + '<span>添加</span>';
+      function add() {
+        var v = input.value.trim();
+        if (!v) return;
+        todos.unshift({ id: genId(), text: v, done: false });
+        saveJSON(TODOS_KEY, todos);
+        render();
+      }
+      addBtn.disabled = true;
+      input.addEventListener('input', function () { addBtn.disabled = !input.value.trim(); });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
+      addBtn.addEventListener('click', add);
+      addRow.appendChild(input); addRow.appendChild(addBtn);
+      el.appendChild(addRow);
+
+      var list = document.createElement('div');
+      list.className = 'todo-list';
+      if (todos.length === 0) {
+        var empty = document.createElement('p');
+        empty.className = 'todo-empty';
+        empty.textContent = '暂无待办事项，开始添加吧';
+        list.appendChild(empty);
+      } else {
+        todos.forEach(function (t) {
+          var item = document.createElement('div');
+          item.className = 'todo-item';
+          item.innerHTML =
+            '<label class="todo-label"><input type="checkbox"' + (t.done ? ' checked' : '') + '/>' +
+            '<span class="todo-check">' + icon('check') + '</span>' +
+            '<span class="todo-text"></span></label>';
+          item.querySelector('.todo-text').textContent = t.text;
+          var del = document.createElement('button');
+          del.className = 'btn btn-icon btn-ghost'; del.innerHTML = icon('trash-2');
+          del.addEventListener('click', function () {
+            todos = todos.filter(function (x) { return x.id !== t.id; });
+            saveJSON(TODOS_KEY, todos);
+            render();
+          });
+          item.querySelector('input').addEventListener('change', function () {
+            t.done = !t.done;
+            saveJSON(TODOS_KEY, todos);
+            render();
+          });
+          item.appendChild(del);
+          list.appendChild(item);
+        });
+      }
+      el.appendChild(list);
+    }
+
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具：PDF 转 Word
+   * ============================================================ */
+  function PdfApp() {
+    var file = null, busy = false, resultBlob = null;
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      el.appendChild(dropzone);
+      if (file) {
+        var row = document.createElement('div');
+        row.className = 'flex-between';
+        row.innerHTML = '<span style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;"><span class="file-text" style="color:var(--muted-fg);display:inline-flex;"></span><span class="name" style="color:var(--muted-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span></span>';
+        row.querySelector('.file-text').innerHTML = icon('file-text');
+        row.querySelector('.name').textContent = file.name;
+        el.appendChild(row);
+
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-primary w-full'; btn.disabled = busy;
+        if (busy) { btn.innerHTML = icon('loader-circle', 'spin') + '<span>转换中…</span>'; }
+        else { btn.innerHTML = '<span>转换为 Word</span>'; }
+        btn.addEventListener('click', onConvert);
+        el.appendChild(btn);
+      }
+      if (resultBlob) {
+        var rb = document.createElement('div');
+        rb.className = 'result-block space-y-3';
+        var p = document.createElement('p');
+        p.className = 'field-label'; p.textContent = '转换成功，可下载 .doc 文档';
+        rb.appendChild(p);
+        var dl = document.createElement('button');
+        dl.className = 'btn btn-secondary w-full';
+        dl.innerHTML = icon('download') + '<span>下载 Word 文档</span>';
+        dl.addEventListener('click', function () { downloadBlob(resultBlob, baseName(file.name) + '.doc'); });
+        rb.appendChild(dl);
+        el.appendChild(rb);
+      }
+    }
+
+    function onFile(f) {
+      if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { B.error('请上传 PDF 格式的文件'); return; }
+      file = f; resultBlob = null; render();
+    }
+    async function onConvert() {
+      if (!file || busy) return;
+      busy = true; render();
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        var buf = await file.arrayBuffer();
+        var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        var all = '';
+        for (var i = 1; i <= pdf.numPages; i++) {
+          var page = await pdf.getPage(i);
+          var content = await page.getTextContent();
+          all += content.items.map(function (it) { return it.str || ''; }).join(' ') + '\n';
+        }
+        if (!all.trim()) { B.warning('该PDF未包含可提取的文字（可能是扫描件或图片型PDF）'); return; }
+        var esc = function (s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+        var doc = '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + esc(file.name) + '</title></head><body>' + all.split('\n').map(function (line) { return '<p>' + esc(line) + '</p>'; }).join('') + '</body></html>';
+        resultBlob = new Blob(['\ufeff', doc], { type: 'application/msword' });
+        B.success('转换完成');
+      } catch (e) {
+        B.error(e instanceof Error ? e.message : '转换失败，请检查文件');
+      } finally { busy = false; render(); }
+    }
+
+    var dropzone = createDropzone('pdf-input', 'application/pdf,.pdf', onFile);
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具：二维码识别
+   * ============================================================ */
+  function QrRecognizeApp() {
+    var file = null, previewUrl = null, busy = false, text = '';
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      el.appendChild(dropzone);
+      if (file) {
+        var body = document.createElement('div');
+        body.className = 'space-y-3';
+        if (previewUrl) {
+          var prev = document.createElement('div'); prev.className = 'preview';
+          var img = document.createElement('img'); img.src = previewUrl; img.alt = '图片预览';
+          prev.appendChild(img);
+          body.appendChild(prev);
+        }
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-primary w-full'; btn.disabled = busy;
+        if (busy) { btn.innerHTML = icon('loader-circle', 'spin') + '<span>识别中…</span>'; }
+        else { btn.innerHTML = icon('qr-code') + '<span>识别二维码</span>'; }
+        btn.addEventListener('click', onRecognize);
+        body.appendChild(btn);
+        el.appendChild(body);
+      }
+      if (text) {
+        var rb = document.createElement('div');
+        rb.className = 'result-block space-y-3';
+        var head = document.createElement('div');
+        head.className = 'flex-between';
+        head.innerHTML = '<span class="field-label" style="margin:0;">识别结果</span>';
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-ghost btn-sm';
+        copyBtn.innerHTML = icon('copy') + '<span>复制</span>';
+        copyBtn.addEventListener('click', async function () {
+          try { await navigator.clipboard.writeText(text); B.success('已复制到剪贴板'); }
+          catch (e) { B.error('复制失败'); }
+        });
+        head.appendChild(copyBtn);
+        rb.appendChild(head);
+        var ta = document.createElement('textarea');
+        ta.className = 'textarea'; ta.readOnly = true; ta.value = text;
+        rb.appendChild(ta);
+        el.appendChild(rb);
+      }
+    }
+
+    function onFile(f) {
+      if (!f.type.startsWith('image/')) { B.error('请上传图片格式的文件'); return; }
+      file = f; text = '';
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(f);
+      render();
+    }
+    async function onRecognize() {
+      if (!file || busy) return;
+      busy = true; render();
+      try {
+        var url = URL.createObjectURL(file);
+        var img = await new Promise(function (resolve, reject) {
+          var im = new Image();
+          im.onload = function () { resolve(im); };
+          im.onerror = function () { reject(new Error('图片加载失败')); };
+          im.src = url;
+        });
+        var canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('画布初始化失败');
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (!code || !code.data) { B.warning('未识别到二维码，请尝试更清晰的图片'); return; }
+        text = code.data;
+        B.success('二维码识别成功');
+      } catch (e) {
+        B.error(e instanceof Error ? e.message : '识别失败，请重试');
+      } finally { busy = false; render(); }
+    }
+
+    var dropzone = createDropzone('qrr-input', 'image/*', onFile);
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具：二维码生成（提取）
+   * ============================================================ */
+  function QrGenerateApp() {
+    var input = '', qrUrl = null;
+    var el = document.createElement('div');
+    el.className = 'space-y-6';
+
+    function render() {
+      el.innerHTML = '';
+      var wrap = document.createElement('div');
+      wrap.className = 'space-y-2';
+      var label = document.createElement('label');
+      label.className = 'field-label'; label.textContent = '输入文本或链接';
+      wrap.appendChild(label);
+      var ta = document.createElement('textarea');
+      ta.className = 'textarea'; ta.placeholder = '例如：https://example.com'; ta.value = input;
+      ta.addEventListener('input', function () { input = ta.value; regenerate(); });
+      wrap.appendChild(ta);
+      el.appendChild(wrap);
+
+      if (qrUrl) {
+        var qb = document.createElement('div');
+        qb.className = 'result-block';
+        var box = document.createElement('div');
+        box.className = 'qr-box';
+        var cw = document.createElement('div');
+        cw.className = 'qr-canvas-wrap';
+        var img = document.createElement('img'); img.src = qrUrl; img.alt = '生成的二维码';
+        cw.appendChild(img);
+        box.appendChild(cw);
+        var dl = document.createElement('button');
+        dl.className = 'btn btn-secondary';
+        dl.innerHTML = icon('download') + '<span>下载二维码</span>';
+        dl.addEventListener('click', function () {
+          var a = document.createElement('a');
+          a.href = qrUrl; a.download = 'qrcode.png';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+        box.appendChild(dl);
+        qb.appendChild(box);
+        el.appendChild(qb);
+      }
+    }
+
+    var timer = null;
+    function regenerate() {
+      var v = input.trim();
+      if (!v) { qrUrl = null; return; }
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        QRCode.toDataURL(v, { margin: 2, width: 512, color: { dark: '#010102', light: '#ffffff' } })
+          .then(function (url) { qrUrl = url; render(); })
+          .catch(function () { B.error('二维码生成失败'); });
+      }, 200);
+    }
+
+    render();
+    return el;
+  }
+
+  /* ============================================================
+   * 工具弹窗
+   * ============================================================ */
+  var TOOL_COMPONENTS = {
+    'image-compress': CompressApp,
+    'image-sharpen': SharpenApp,
+    'image-ocr': OcrApp,
+    'todo': TodoApp,
+    'pdf-to-word': PdfApp,
+    'qr-recognize': QrRecognizeApp,
+    'qr-generate': QrGenerateApp
+  };
+  function openTool(toolId, name) {
+    activeToolId = toolId;
+    var def = TOOL_MAP[toolId];
+    toolTitle.textContent = name || (def ? def.name : '');
+    toolDesc.textContent = def ? (TOOL_DESC[toolId] || def.desc) : '';
+    toolBody.innerHTML = '';
+    if (TOOL_COMPONENTS[toolId]) toolBody.appendChild(TOOL_COMPONENTS[toolId]());
+    toolDialog.classList.remove('hidden');
+    toolBody.scrollTop = 0;
+  }
+  function closeTool() { toolDialog.classList.add('hidden'); activeToolId = null; }
+
+  /* ============================================================
+   * 卡片
+   * ============================================================ */
+  function renderCard(item, index) {
+    var def = item.kind === 'tool' ? TOOL_MAP[item.toolId] : null;
+    var isLink = item.kind === 'link';
+    var card = document.createElement('div');
+    card.className = 'card' + (manageMode ? ' grab' : ' clickable');
+
+    var renaming = false;
+    function draw() {
+      card.innerHTML = '';
+      var top = document.createElement('div');
+      top.className = 'card-top';
+      var idx = document.createElement('span');
+      idx.className = 'card-index';
+      idx.textContent = String(index + 1).padStart(2, '0');
+      top.appendChild(idx);
+      if (manageMode) top.innerHTML += icon('grip-vertical');
+      else if (isLink) { var ext = document.createElement('span'); ext.className = 'link-ico'; ext.innerHTML = icon('external-link'); top.appendChild(ext); }
+      card.appendChild(top);
+
+      var body = document.createElement('div');
+      body.className = 'card-body';
+      var iconBox = document.createElement('div');
+      iconBox.className = 'card-icon';
+      if (isLink && item.icon) {
+        var im = document.createElement('img');
+        im.src = item.icon;
+        im.alt = '';
+        im.addEventListener('error', function () { iconBox.innerHTML = icon('external-link'); });
+        iconBox.appendChild(im);
+      } else {
+        iconBox.innerHTML = icon(def ? def.icon : 'external-link');
+      }
+      body.appendChild(iconBox);
+
+      if (renaming) {
+        var row = document.createElement('div');
+        row.className = 'rename-row';
+        row.addEventListener('click', function (e) { e.stopPropagation(); });
+        var inp = document.createElement('input');
+        inp.className = 'rename-input'; inp.value = item.name;
+        var ok = document.createElement('button');
+        ok.className = 'btn btn-icon btn-ghost'; ok.innerHTML = icon('check');
+        ok.style.color = 'var(--primary)';
+        var cancel = document.createElement('button');
+        cancel.className = 'btn btn-icon btn-ghost'; cancel.innerHTML = icon('x');
+        cancel.style.color = 'var(--muted-fg)';
+        function save() {
+          var v = inp.value.trim();
+          if (!v) { B.error('名称不能为空'); return; }
+          item.name = v; renaming = false; saveJSON(ITEMS_KEY, items); renderGrid();
+        }
+        function cancelRename() { renaming = false; renderGrid(); }
+        ok.addEventListener('click', save);
+        cancel.addEventListener('click', cancelRename);
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancelRename(); });
+        setTimeout(function () { inp.focus(); }, 0);
+        row.appendChild(inp); row.appendChild(ok); row.appendChild(cancel);
+        body.appendChild(row);
+      } else {
+        var nameEl = document.createElement('span');
+        nameEl.className = 'card-name';
+        nameEl.textContent = item.name;
+        body.appendChild(nameEl);
+      }
+      card.appendChild(body);
+
+      if (manageMode && !renaming) {
+        var actions = document.createElement('div');
+        actions.className = 'card-actions';
+        if (isLink) {
+          var ed = document.createElement('button');
+          ed.className = 'btn';
+          ed.innerHTML = icon('pencil') + '<span>编辑</span>';
+          ed.addEventListener('click', function (e) { e.stopPropagation(); openLinkDialog(item); });
+          actions.appendChild(ed);
+          var del = document.createElement('button');
+          del.className = 'btn btn-danger';
+          del.innerHTML = icon('trash-2') + '<span>删除</span>';
+          del.addEventListener('click', function (e) {
+            e.stopPropagation();
+            items = items.filter(function (x) { return x.id !== item.id; });
+            saveJSON(ITEMS_KEY, items);
+            renderGrid();
+          });
+          actions.appendChild(del);
+        } else {
+          var rn = document.createElement('button');
+          rn.className = 'btn';
+          rn.innerHTML = icon('pencil') + '<span>重命名</span>';
+          rn.addEventListener('click', function (e) { e.stopPropagation(); renaming = true; draw(); });
+          actions.appendChild(rn);
+        }
+        card.appendChild(actions);
+      }
+    }
+
+    card.addEventListener('click', function () {
+      if (manageMode) return;
+      if (isLink) { if (item.url) window.open(item.url, '_blank', 'noopener,noreferrer'); }
+      else if (item.toolId) { openTool(item.toolId, item.name); }
+    });
+    if (manageMode) {
+      card.setAttribute('draggable', 'true');
+      card.dataset.index = index;
+      card.addEventListener('dragstart', function (e) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.id);
+        dragIndex = index;
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        setDragOver(card, index);
+      });
+      card.addEventListener('dragleave', function () {
+        if (dragOverCard === card) {
+          card.classList.remove('drag-over');
+          dragOverCard = null;
+        }
+      });
+      card.addEventListener('drop', function (e) {
+        e.preventDefault();
+        setDragOver(card, index);
+      });
+      card.addEventListener('dragend', finishDrag);
+    }
+    draw();
+    return card;
+  }
+
+  /* ---------- 拖拽排序辅助 ---------- */
+  function setDragOver(card, index) {
+    if (dragOverCard && dragOverCard !== card) {
+      dragOverCard.classList.remove('drag-over');
+    }
+    dragOverCard = card;
+    dragOverIndex = index;
+    card.classList.add('drag-over');
+  }
+  function finishDrag() {
+    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      var arr = items.slice().sort(function (a, b) { return a.order - b.order; });
+      var moved = arr.splice(dragIndex, 1)[0];
+      arr.splice(dragOverIndex, 0, moved);
+      arr.forEach(function (it, i) { it.order = i; });
+      saveJSON(ITEMS_KEY, items);
+    }
+    dragIndex = null; dragOverIndex = null; dragOverCard = null;
+    renderGrid();
+  }
+
+  /* ============================================================
+   * 渲染主页
+   * ============================================================ */
+  function renderGrid() {
+    var sorted = items.slice().sort(function (a, b) { return a.order - b.order; });
+    var q = search.trim().toLowerCase();
+    var filtered = q ? sorted.filter(function (it) { return it.name.toLowerCase().includes(q); }) : sorted;
+
+    countEl.innerHTML = '共 <b>' + sorted.length + '</b> 个应用';
+
+    gridEl.innerHTML = '';
+    if (filtered.length === 0) {
+      emptyState.classList.remove('hidden');
+      emptyIcon.innerHTML = icon('search');
+      emptyText.textContent = q ? '未找到匹配的应用或网页' : '暂无内容';
+    } else {
+      emptyState.classList.add('hidden');
+      filtered.forEach(function (item, i) { gridEl.appendChild(renderCard(item, i)); });
+    }
+  }
+
+  /* ---------- 头部控制 ---------- */
+  function renderHeader() {
+    manageBtn.innerHTML = manageMode ? icon('check') + '<span>完成</span>' : icon('settings') + '<span>管理</span>';
+    manageBtn.className = 'btn ' + (manageMode ? 'btn-secondary' : 'btn-outline');
+    addLinkBtn.style.display = manageMode ? '' : 'none';
+    addLinkBtn.innerHTML = icon('plus') + '<span>添加网页</span>';
+    manageHint.style.display = manageMode ? '' : 'none';
+  }
+
+  /* ---------- 添加/编辑网页弹窗 ---------- */
+  function openLinkDialog(editItem) {
+    editItem = (editItem && editItem.id) ? editItem : null;
+    editingLinkId = editItem ? editItem.id : null;
+    $('link-name').value = editItem ? editItem.name : '';
+    $('link-url').value = editItem ? (editItem.url || '') : '';
+    $('link-icon').value = editItem ? (editItem.icon || '') : '';
+    $('link-title').textContent = editItem ? '编辑收藏网页' : '添加收藏网页';
+    $('link-desc').textContent = editItem ? '修改网页名称、图标与地址' : '输入网页名称与地址，添加后可在主页点击跳转';
+    $('link-submit').innerHTML = icon(editItem ? 'check' : 'plus') + '<span>' + (editItem ? '保存' : '添加') + '</span>';
+    linkDialog.classList.remove('hidden'); linkDialogOpen = true;
+    setTimeout(function () { $('link-name').focus(); }, 0);
+  }
+  function closeLinkDialog() { linkDialog.classList.add('hidden'); linkDialogOpen = false; editingLinkId = null; }
+  function submitLink() {
+    var name = $('link-name').value.trim();
+    var raw = $('link-url').value.trim();
+    var iconRaw = $('link-icon').value.trim();
+    if (!name) { B.error('请填写网页名称'); return; }
+    if (!raw) { B.error('请填写网页地址'); return; }
+    var url;
+    try {
+      if (/\s/.test(raw)) throw new Error('invalid-url');
+      url = normalizeUrl(raw);
+      new URL(url);
+    }
+    catch (e) { B.error('网页地址格式不正确'); return; }
+    var iconUrl = '';
+    if (iconRaw) {
+      try {
+        iconUrl = /^[a-z][a-z0-9+.-]*:/i.test(iconRaw) ? iconRaw : normalizeUrl(iconRaw);
+        new URL(iconUrl);
+      }
+      catch (e) { B.error('图标地址格式不正确'); return; }
+    }
+    if (editingLinkId) {
+      var item = items.find(function (x) { return x.id === editingLinkId; });
+      if (item) {
+        item.name = name; item.url = url; item.icon = iconUrl;
+        saveJSON(ITEMS_KEY, items);
+        B.success('已更新收藏网页');
+      }
+    }
+    else {
+      var maxOrder = items.reduce(function (m, it) { return Math.max(m, it.order || 0); }, 0);
+      items.push({ id: genId(), name: name, kind: 'link', url: url, icon: iconUrl, order: maxOrder + 1 });
+      saveJSON(ITEMS_KEY, items);
+      B.success('已添加收藏网页');
+    }
+    closeLinkDialog();
+    renderGrid();
+  }
+
+  /* ---------- 事件绑定 ---------- */
+  manageBtn.addEventListener('click', function () { manageMode = !manageMode; renderHeader(); renderGrid(); });
+  addLinkBtn.addEventListener('click', function () { openLinkDialog(); });
+  $('link-cancel').addEventListener('click', closeLinkDialog);
+  $('link-submit').innerHTML = icon('plus') + '<span>添加</span>';
+  $('link-submit').addEventListener('click', submitLink);
+  $('link-url').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitLink(); });
+  linkDialog.addEventListener('click', function (e) { if (e.target === linkDialog) closeLinkDialog(); });
+  toolDialog.addEventListener('click', function (e) { if (e.target === toolDialog) closeTool(); });
+  $('tool-close').addEventListener('click', closeTool);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (!toolDialog.classList.contains('hidden')) closeTool(); if (!linkDialog.classList.contains('hidden')) closeLinkDialog(); } });
+  searchEl.addEventListener('input', function () { search = searchEl.value; renderGrid(); });
+
+  /* ---------- 静态图标填充 ---------- */
+  $('brand-icon').innerHTML = icon('layout-grid');
+  $('search-icon').innerHTML = icon('search');
+
+  /* ---------- 初始渲染 ---------- */
+  renderHeader();
+  renderGrid();
+})();
+</script>
+</body>
+</html>
