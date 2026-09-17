@@ -464,6 +464,17 @@
     'file-text': '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
     'qr-code': '<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/>',
     'scan-line': '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
+    'link-mail': '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    'link-oa': '<rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+    'link-lost': '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+    'link-construction': '<path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1z"/><path d="M10 10V5a2 2 0 0 1 4 0v5"/><path d="M4 15v-3a8 8 0 0 1 16 0v3"/>',
+    'link-mappin': '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    'link-ticket': '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>',
+    'link-volunteer': '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+    'link-timer': '<path d="M10 2h4"/><path d="M12 14v-4"/><circle cx="12" cy="14" r="8"/>',
+    'link-weather': '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+    'link-edu': '<path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><path d="M22 10v6"/>',
+    'link-bus': '<path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h15v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/><path d="M22 9v6"/><circle cx="6.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="1.5"/>',
     'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16.5 9"/>',
     'circle-x': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
     'triangle-alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -476,7 +487,6 @@
 
   /* ---------- 应用定义 ---------- */
   var TOOLS = [
-    { id: 'image-compress', name: '图片压缩', desc: '在浏览器端压缩图片体积', icon: 'image-down' },
     { id: 'image-sharpen',  name: '图片锐化', desc: '增强图片清晰度与细节', icon: 'sparkles' },
     { id: 'image-ocr',      name: '图片文字提取', desc: '识别并提取图片中的文字', icon: 'scan-text' },
     { id: 'todo',           name: '待办清单', desc: '记录与管理你的待办事项', icon: 'list-todo' },
@@ -487,7 +497,6 @@
   var TOOL_MAP = {};
   TOOLS.forEach(function (t) { TOOL_MAP[t.id] = t; });
   var TOOL_DESC = {
-    'image-compress': '在浏览器端压缩图片体积，支持调整质量与尺寸',
     'image-sharpen': '增强图片清晰度与细节，支持调整锐化强度',
     'image-ocr': '识别并提取图片中的中英文文字内容',
     'todo': '记录与管理你的待办事项，数据本地保存',
@@ -524,13 +533,63 @@
     saveJSON(ITEMS_KEY, items);
   })();
 
+
+  /* ---------- 清理已下线工具卡片 ---------- */
+  (function cleanupRemovedTools() {
+    var before = items.length;
+    items = items.filter(function (it) { return !(it.kind === 'tool' && (it.toolId === 'image-compress' || it.toolId === 'timer')); });
+    if (items.length !== before) saveJSON(ITEMS_KEY, items);
+  })();
+
+  /* ---------- 升级网页图标为内置线性风格（兼容旧版 emoji 图标） ---------- */
+  (function upgradeLinkIcons() {
+    var MAP = [
+      ['nmc.cn',               'link-weather'],
+      ['qd-metro.com:8094',    'link-edu'],
+      ['qddtsmbc',             'link-bus'],
+      ['mail.163.com',         'link-mail'],
+      ['seeyon',               'link-oa'],
+      ['172.16.100.202',       'link-lost'],
+      ['qdsg2',                'link-construction'],
+      ['map.baidu.com',        'link-mappin'],
+      ['piaowu',               'link-ticket'],
+      ['lunz.cn',              'link-volunteer'],
+      ['stopwatch-online',     'link-timer']
+    ];
+    var changed = false;
+    items.forEach(function (it) {
+      if (it.kind !== 'link') return;
+      for (var i = 0; i < MAP.length; i++) {
+        if (it.url.indexOf(MAP[i][0]) !== -1) {
+          var want = 'builtin:' + MAP[i][1];
+          if (it.icon !== want) { it.icon = want; changed = true; }
+          break;
+        }
+      }
+    });
+    if (changed) saveJSON(ITEMS_KEY, items);
+  })();
+
+  /* ---------- 补齐 TOOLS 里新增的工具卡片（已在用户数据中则不动） ---------- */
+  (function ensureToolsPresent() {
+    var maxOrder = items.reduce(function (m, it) { return Math.max(m, it.order || 0); }, 0);
+    TOOLS.forEach(function (t) {
+      var exists = items.some(function (it) { return it.kind === 'tool' && it.toolId === t.id; });
+      if (!exists) {
+        maxOrder += 1;
+        items.push({ id: genId(), name: t.name, kind: 'tool', toolId: t.id, order: maxOrder });
+      }
+    });
+    saveJSON(ITEMS_KEY, items);
+  })();
+
   /* ---------- 默认收藏网页（首次加载自动添加一次） ---------- */
   (function seedDefaultLinks() {
     if (loadJSON('portal.defaultLinksSeeded.v1', false)) return;
     var defaults = [
-      { name: '天气', url: 'https://www.nmc.cn/publish/forecast/ASD/qingdao.html' },
-      { name: '青e学', url: 'https://qex.qd-metro.com:8094/home' },
-      { name: '首末班车时间', url: 'https://www.qd-metro.com/qddtsmbc.php#pagetop' }
+      { name: '天气', url: 'https://www.nmc.cn/publish/forecast/ASD/qingdao.html', icon: 'builtin:link-weather' },
+      { name: '青e学', url: 'https://qex.qd-metro.com:8094/home', icon: 'builtin:link-edu' },
+      { name: '首末班车时间', url: 'https://www.qd-metro.com/qddtsmbc.php#pagetop', icon: 'builtin:link-bus' }
     ];
     var added = false;
     defaults.forEach(function (dl) {
@@ -542,6 +601,52 @@
       }
     });
     saveJSON('portal.defaultLinksSeeded.v1', true);
+    if (added) saveJSON(ITEMS_KEY, items);
+  })();
+
+
+  /* ---------- 第二批默认收藏网页（首次加载自动添加一次） ---------- */
+  (function seedDefaultLinksV2() {
+    if (loadJSON('portal.defaultLinksSeeded.v2', false)) return;
+    var defaults = [
+      { name: '客伤邮箱', url: 'https://mail.163.com', icon: 'builtin:link-mail' },
+      { name: 'OA', url: 'http://oa.qd-metro.com:8080/seeyon/main.do?method=main', icon: 'builtin:link-oa' },
+      { name: '失物招领系统', url: 'http://172.16.100.202:7006/grstemp/login.jsp', icon: 'builtin:link-lost' },
+      { name: '施工调度系统', url: 'http://172.16.200.120/qdsg2/login.jsp', icon: 'builtin:link-construction' },
+      { name: '百度地图', url: 'https://map.baidu.com/', icon: 'builtin:link-mappin' },
+      { name: '票务系统', url: 'http://172.16.200.32:8080/sso/oauth2/authorize?client_id=clientId&response_type=code&redirect_uri=http%3A%2F%2Fpiaowu.qd-metro.com%2Fssoclient%3Freturn_url%3Dhttp%253A%252F%252Fpiaowu.qd-metro.com%252Findex.html&v2_compatible=true', icon: 'builtin:link-ticket' },
+      { name: '志愿者平台', url: 'https://uc-identity-qtsk.lunz.cn/account/login?returnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dsubway-party-ui%26redirect_uri%3Dhttps%253A%252F%252Fqddtzyfy.qd-metro.com%253A8086%252Fauthentication%252Fcallback%26response_type%3Did_token%2520token%26scope%3Dopenid%2520profile%2520uc-inside-api%2520uc-users-outside-api%2520subway-party-api%26state%3D6311b27eba714703a8db8f677afb61f1%26nonce%3D300f664e92d54c808f8166c7fe5cec9d', icon: 'builtin:link-volunteer' }
+    ];
+    var added = false;
+    defaults.forEach(function (dl) {
+      var exists = items.some(function (it) { return it.kind === 'link' && it.url === dl.url; });
+      if (!exists) {
+        var maxOrder = items.reduce(function (m, it) { return Math.max(m, it.order || 0); }, 0);
+        items.push({ id: genId(), name: dl.name, kind: 'link', url: dl.url, icon: '', order: maxOrder + 1 });
+        added = true;
+      }
+    });
+    saveJSON('portal.defaultLinksSeeded.v2', true);
+    if (added) saveJSON(ITEMS_KEY, items);
+  })();
+
+
+  /* ---------- 第三批默认收藏网页（首次加载自动添加一次） ---------- */
+  (function seedDefaultLinksV3() {
+    if (loadJSON('portal.defaultLinksSeeded.v3', false)) return;
+    var defaults = [
+      { name: '计时器', url: 'https://stopwatch-online.com/zh-cn/timer/', icon: 'builtin:link-timer' }
+    ];
+    var added = false;
+    defaults.forEach(function (dl) {
+      var exists = items.some(function (it) { return it.kind === 'link' && it.url === dl.url; });
+      if (!exists) {
+        var maxOrder = items.reduce(function (m, it) { return Math.max(m, it.order || 0); }, 0);
+        items.push({ id: genId(), name: dl.name, kind: 'link', url: dl.url, icon: '', order: maxOrder + 1 });
+        added = true;
+      }
+    });
+    saveJSON('portal.defaultLinksSeeded.v3', true);
     if (added) saveJSON(ITEMS_KEY, items);
   })();
 
@@ -890,6 +995,7 @@
   /* ============================================================
    * 工具：待办清单
    * ============================================================ */
+
   function TodoApp() {
     var el = document.createElement('div');
     el.className = 'space-y-6';
@@ -1191,7 +1297,6 @@
    * 工具弹窗
    * ============================================================ */
   var TOOL_COMPONENTS = {
-    'image-compress': CompressApp,
     'image-sharpen': SharpenApp,
     'image-ocr': OcrApp,
     'todo': TodoApp,
@@ -1237,7 +1342,9 @@
       body.className = 'card-body';
       var iconBox = document.createElement('div');
       iconBox.className = 'card-icon';
-      if (isLink && item.icon) {
+      if (isLink && item.icon && item.icon.indexOf('builtin:') === 0) {
+        iconBox.innerHTML = icon(item.icon.slice(8));
+      } else if (isLink && item.icon && item.icon.indexOf('data:') === 0) {
         var im = document.createElement('img');
         im.src = item.icon;
         im.alt = '';
