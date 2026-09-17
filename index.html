@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
@@ -277,14 +277,6 @@
   .icon-drop-text b { color: var(--fg); font-weight: 600; }
   .card.icon-drop-over { border-color: var(--primary); box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent); }
   .card.icon-drop-over .card-icon { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, transparent); }
-  .card.link-card .card-icon { position: relative; }
-  .card.link-card .card-icon::after {
-    content: '换图标'; position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0, 0, 0, .55); color: #fff; font-size: .75rem;
-    border-radius: inherit; opacity: 0; transition: opacity .15s; pointer-events: none;
-  }
-  .card.link-card .card-icon:hover::after { opacity: 1; }
 
   /* ---------- Todo ---------- */
   .todo-stats { display: flex; align-items: center; justify-content: space-between; font-size: .875rem; }
@@ -539,6 +531,26 @@
     var before = items.length;
     items = items.filter(function (it) { return !(it.kind === 'tool' && (it.toolId === 'image-compress' || it.toolId === 'timer')); });
     if (items.length !== before) saveJSON(ITEMS_KEY, items);
+  })();
+
+  /* ---------- 按用户指定顺序重排卡片 ---------- */
+  (function applyDesiredOrder() {
+    var ORDER = ['票务系统','OA','施工调度系统','客伤邮箱','青e学','二维码识别',
+      '失物招领系统','志愿者平台','百度地图','首末班车时间','天气','待办清单',
+      '计时器','图片锐化','图片文字提取','PDF转Word','二维码生成'];
+    var pos = {};
+    ORDER.forEach(function (name, i) { pos[name] = i; });
+    var changed = false;
+    items.forEach(function (it) {
+      var key = it.kind === 'tool' ? TOOL_MAP[it.toolId] && TOOL_MAP[it.toolId].name : it.name;
+      if (key in pos) {
+        if (it.order !== pos[key]) { it.order = pos[key]; changed = true; }
+      }
+    });
+    if (changed) {
+      items.sort(function (a, b) { return a.order - b.order; });
+      saveJSON(ITEMS_KEY, items);
+    }
   })();
 
   /* ---------- 升级网页图标为内置线性风格（兼容旧版 emoji 图标） ---------- */
